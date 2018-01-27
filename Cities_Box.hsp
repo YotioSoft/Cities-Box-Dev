@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------------------------------
 
-								       Cities Box Ver 1.0.2.1
+								       Cities Box Ver 1.0.2.2
 										 Main Source Code
 	
 						 			  (C)YotioSoft 2017-2018
@@ -293,6 +293,11 @@
 		Set_Play_BGM = int( get_chapter(config, "Set_Play_BGM", " = ", ";") )
 		Ignore_Update = int( get_chapter(config, "Ignore_Update", " = ", ";") )
 		Get_Dev_Version = int( get_chapter(config, "Get_Dev_Version", " = ", ";") )
+
+		OS = get_chapter(config, "OS", " = \"", "\"")
+
+		Adjustment_Interval = int( get_chapter(config, "Adjustment_Interval", " = ", ";") )
+		Drow_Interval = int( get_chapter(config, "Drow_Interval", " = ", ";") )
 	
 		Config_WindowSize_X = int( get_chapter(config, "Config_WindowSize_X", " = ", ";") )
 		Config_WindowSize_Y = int( get_chapter(config, "Config_WindowSize_Y", " = ", ";") )
@@ -319,6 +324,7 @@
 	//ロゴ、背景画像（buffer 1は設定ウィンドウで使うため使用不可）
 		celload "img/logo.png", 2										; ロゴ
 		celload "img/logo2.png", 62										; ロゴ2（タイトル）
+		celload "img/logo2_Mac.png", 75									; ロゴ2（macOS向け）
 		celload "img/title_background.png", 15							; タイトル背景画像
 	
 	//メニューのアイコン
@@ -969,8 +975,9 @@
 		latest_version__Title = get_chapter(latest_version, "Title", " : ", ";")
 		latest_version__Version = get_chapter(latest_version, "Version", " : ", ";")
 		latest_version__About = get_chapter(latest_version, "About", " : ", ";")
+		latest_version__OS = get_chapter(latest_version, "OS", " : ", ";")
 		
-		if latest_version__Release_number > NOW_Release_number {
+		if latest_version__Release_number > NOW_Release_number and instr(latest_version__OS, 0, OS) != -1 {
 			normalUpdate = 1
 	
 			goto *menu
@@ -995,8 +1002,9 @@
 			Dev_latest_version__Title = get_chapter(Dev_latest_version, "Title", " : ", ";")
 			Dev_latest_version__Version = get_chapter(Dev_latest_version, "Version", " : ", ";")
 			Dev_latest_version__About = get_chapter(Dev_latest_version, "About", " : ", ";")
+			Dev_latest_version__OS = get_chapter(latest_version, "OS", " : ", ";")
 			
-			if Dev_latest_version__Release_number > NOW_Release_number {
+			if Dev_latest_version__Release_number > NOW_Release_number and instr(Dev_latest_version__OS, 0, OS) != -1 {
 				devUpdate = 1
 		
 				goto *menu
@@ -1065,6 +1073,10 @@
 			pos 8, 25  : gcopy 65, 0, 0, 32, 32
 			pos 45, 25 : gcopy 72, 0, 0, 32, 32
 
+			if OS = "macOS" {
+				pos 82, 25 : gcopy 64, 0, 0, 32, 32
+			}
+
 			if click_range(8, 25, 8+32, 25+32) = 1 {
 				font SystemFont, 10
 				
@@ -1078,6 +1090,16 @@
 				color 255, 255, 255 : sboxf 200, 45, 25+32, 45+70, 25+32+18
 				color 0, 0, 0
 				pos 45+2, 25+32+2 : mes "Addon Maker"
+			}
+
+			if OS = "macOS" {
+				if click_range(82, 25, 82+32, 25+32) = 1 {
+					font SystemFont, 10
+					
+					color 255, 255, 255 : sboxf 200, 82, 25+32, 82+70, 25+32+18
+					color 0, 0, 0
+					pos 82+2, 25+32+2 : mes "ReadMe.txt"
+				}
 			}
 			
 	
@@ -1113,6 +1135,12 @@
 	}
 	if click_range(45, 25, 45+32, 25+32) = 1 {
 		gosub *menu_addon_maker
+	}
+
+	if OS = "macOS" {
+		if click_range(82, 25, 82+32, 25+32) = 1 {
+			exec "ReadMe.txt", 16
+		}
 	}
 	
 	return
@@ -1176,9 +1204,41 @@
 	
 				; フォント設定(SystemFont)
 					pos 90, 130 : mes "フォント"
+
+					gtmp = ginfo(14)
 					
-					pos 90+ginfo(14)+100, 130 : objsize 150, 20 : input SystemFont : SyetmFont__stat = stat
-					pos 90+ginfo(14)+250, 130 : objsize 50, 20  : button gosub "参照", *refer_fonts
+					pos 90+gtmp+100, 130 : objsize 150, 20 : input SystemFont : SyetmFont__stat = stat
+					pos 90+gtmp+250, 130 : objsize 50, 20  : button gosub "参照", *refer_fonts
+
+				; 動作モード設定(OS)
+					pos 90, 160 : mes "動作モード"
+					
+					pos 90+gtmp+200, 160 : objsize 100, 20 : combox os_num, 100, "Windows\nmacOS"
+
+				; 数値調節間隔（Adjustment_Interval）
+					pos 90, 190 : mes "数値調節等の間隔（数値が低いほど間隔が短い）"
+					
+					pos 90+gtmp+250, 190 : objsize 50, 20 : input Adjustment_Interval : AIinpStat = stat
+
+				; 描写間隔（Drow_Interval）
+					pos 90, 220 : mes "描写間隔（数値が低いほど間隔が短い）"
+					
+					pos 90+gtmp+250, 220 : objsize 50, 20 : input Drow_Interval : DIinpStat = stat
+
+
+				repeat
+					if os_num = 0 {
+						OS = "Windows"
+						objprm AIinpStat, 2
+						objprm DIinpStat, 16
+					} else : if os_num = 1 {
+						OS = "macOS"
+						objprm AIinpStat, 2
+						objprm DIinpStat, 8
+					}
+
+					wait 100
+				loop
 			}
 	
 		; バグ・ご要望の送信
@@ -1209,14 +1269,19 @@
 		; 情報
 			if menu_setting__page = "information" {
 				clrobj
-	
+				
 				color 0, 162, 232 : boxf 60, 128+28, 64, 192+28
 				
 				font SystemFont, 16 : color 255, 255, 255
 				pos 70, 3 : mes "情報"
 	
 				pos 100, 40     : gcopy 2, 0, 0, 110, 110
-				pos 120+110, 40 : gcopy 62, 0, 0, 230, 110
+
+				if OS = "Windows" {
+					pos 120+110, 40 : gcopy 62, 0, 0, 230, 110
+				} else : OS = "macOS" {
+					pos 120+110, 40 : gcopy 75, 0, 0, 230, 110
+				}
 	
 				font SystemFont, 14 : color 255, 255, 255
 				pos 100, 170 : mes ""+about_title+"\nVersion : "+about_version+"\nRelease Number : "+NOW_Release_number+"\nDevelopment Language : HSP 3.5"
@@ -2908,7 +2973,7 @@
 		}
 	
 		//各マスの値を調節
-		if cnt \ 2 = 0 {
+		if cnt \ Adjustment_Interval = 0 {
 			ny = 0
 		
 			repeat mapsize
@@ -3079,10 +3144,6 @@
 
 		if qvvw4 > mapsize+64 {
 			goto *skip2
-		}
-
-		if cnt \ 10 = 0 {
-			title ""+buffer_number(mx,my)+""
 		}
 				
 
@@ -4042,7 +4103,7 @@
 						cmes "F", windowx-140, windowy-titlebar_h-20, windowx-140+10, windowy-titlebar_h-10, 1
 					
 			redraw 1
-			await 16
+			await Drow_Interval
 			c+=16
 	loop
 	
@@ -9857,6 +9918,17 @@
 						}
 						if instr(config_tmp, 0, "Get_Dev_Version") != -1 {
 							noteadd "Get_Dev_Version = "+Get_Dev_Version+";", cnt, 1
+						}
+
+						if instr(config_tmp, 0, "OS") != -1 {
+							noteadd "OS = \""+OS+"\";", cnt, 1
+						}
+
+						if instr(config_tmp, 0, "Adjustment_Interval") != -1 {
+							noteadd "Adjustment_Interval = "+Adjustment_Interval+";", cnt, 1
+						}
+						if instr(config_tmp, 0, "Drow_Interval") != -1 {
+							noteadd "Drow_Interval = "+Drow_Interval+";", cnt, 1
 						}
 
 					loop
