@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------------------------------
 
-								      Cities Box Ver 1.1.0.1
+								      Cities Box Ver 1.1.0.2
 										 Main Source Code
 	
 						 			  (C)YotioSoft 2017-2018
@@ -1162,10 +1162,9 @@
 	return
 	
 *check_update
-	;color 0, 0, 0 : boxf
-	
-	;color 255, 255, 255 : font SystemFont, 14
-	;pos 10, 10 : mes "しばらくお待ちください\nアップデートの確認中..."
+	color 0, 0, 0 : boxf 0, 0, windowx, windowy-5
+	color 255, 255, 255 : font SystemFont, 14
+	pos windowx -200, windowy - 40 : mes "Now Checking for Updates..."
 	
 	notesel about
 	noteload "data/about.txt"
@@ -3592,19 +3591,24 @@
 								celput buffer_number(x,y), obj_dire(x,y)
 							}
 						}
+
+						/* ;描写する順番
+							color 0, 162, 232 : font SystemFont, 16, 1
+							pos macro1 + px + 2, macro2 - 30 : mes cnt
+						*/
 							
 						
 				}
 
 	*skip1				
-			x += 1
+			y += 1
 
-			if x > qvvw2 {
-				x = qvvw1
-				y += 1
+			if y> qvvw4 {
+				y = qvvw3
+				x++
 			}
 
-			if y > qvvw4 : break
+			if x > qvvw2 : break
 
 		loop
 
