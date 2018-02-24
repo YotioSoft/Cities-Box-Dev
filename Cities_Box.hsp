@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------------------------------
 
-								      Cities Box Ver 1.1.1.1
+								      Cities Box Ver 1.1.1.2
 										 Main Source Code
 	
 						 			  (C)YotioSoft 2017-2018
@@ -108,7 +108,7 @@
 	loop
 
 	if finish = -1 {
-		errmes@ = "Cities Box Error A02 : 要素名が見つかりません\n"+search_addon_name+"のアドオンファイル(*.adat)内のタイプ要素名が、\n規定のタイプ要素と合致しません。\nアドオン製作者にお問い合わせください。" 
+		errmes@ = "Cities Box Error A02 : 要素名が見つかりません\n"+search_addon_name+"のアドオンファイル(*.adat)内のタイプ要素名\n"+search_word+"が、\n規定のタイプ要素と合致しません。\nアドオン製作者にお問い合わせください。" 
 		gosub *error@
 	}
 	
@@ -144,7 +144,7 @@
 	loop
 
 	if finish = -1 {
-		errmes@ = "A02 : 要素名が見つかりません\n"+search_addon_name+"のアドオンファイル(*.adat)内のタイプ要素名が、\n規定のタイプ要素と合致しません。\nアドオン製作者にお問い合わせください。" 
+		errmes@ = "A02 : 要素名が見つかりません\n"+search_addon_name+"のアドオンファイル(*.adat)内のタイプ要素名\n"+search_word+"の"+second_search_word+"が、\n規定のタイプ要素と合致しません。\nアドオン製作者にお問い合わせください。" 
 		gosub *error@
 	}
 	
@@ -156,6 +156,22 @@
 		return v3
 	} else {
 		return (v1 / v2)
+	}
+
+/*文字列の取得（マップサイズを超えている場合は空白を返す）*/
+#defcfunc safesearch_str array buf, int x, int y, int mapsizex, int mapsizey
+	if x < 0 or y < 0 or x >= mapsizex or y >= mapsizey {
+		return ""
+	} else {
+		return buf(x,y)
+	}
+
+/*数値の取得（マップサイズを超えている場合は-1を返す）*/
+#defcfunc safesearch_int array buf, int x, int y, int mapsizex, int mapsizey
+	if x < 0 or y < 0 or x >= mapsizex or y >= mapsizey {
+		return -1
+	} else {
+		return buf(x,y)
 	}
 
 /*文字を中央に表示（使用例：cmes "hogehoge", 0, 640, 0, 480, 0）*/
@@ -1648,7 +1664,7 @@
 				pos 70, 3 : mes "バグ・ご要望の送信"
 	
 				font SystemFont, 14 : color 255, 255, 255
-				pos 90, 50 : mes "現在確認されているバグについては、\nReadMe.txtの「13.バグや問題点、今後の予定」をご覧ください。"
+				pos 90, 50 : mes "現在確認されているバグについては、\nReadMe.txtの「14.バグや問題点、今後の予定」をご覧ください。"
 				pos ((500-64)/2)-16, 100 : gcopy 64, 0, 0, 32, 32
 				pos ((500-64)/2)-16+45, 105 : mes "ReadMe.txtを開く"
 	
@@ -7187,44 +7203,127 @@
 	
 		//曲がり角
 			if left_chip = "waterway" and top_chip = "waterway" and bottom_chip != "waterway" and right_chip != "waterway" {
-				obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_turn")
-				obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_turn", addon_direction, addon_total_addon_direction, "left-top")
+				if safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y+1, mapsize, mapsize) = "waterway" {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "turn")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "turn", addon_direction, addon_total_addon_direction, "left-top")
+				} else {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_turn")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_turn", addon_direction, addon_total_addon_direction, "left-top")
+				}
 			}
 			if left_chip != "waterway" and top_chip = "waterway" and bottom_chip != "waterway" and right_chip = "waterway" {
-				obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_turn")
-				obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_turn", addon_direction, addon_total_addon_direction, "right-top")
+				if safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y+1, mapsize, mapsize) = "waterway" {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "turn")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "turn", addon_direction, addon_total_addon_direction, "right-top")
+				} else {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_turn")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_turn", addon_direction, addon_total_addon_direction, "right-top")
+				}
 			}
 			if left_chip = "waterway" and top_chip != "waterway" and bottom_chip = "waterway" and right_chip != "waterway" {
-				obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_turn")
-				obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_turn", addon_direction, addon_total_addon_direction, "left-bottom")
+				if safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y+1, mapsize, mapsize) = "waterway" {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "turn")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "turn", addon_direction, addon_total_addon_direction, "left-bottom")
+				} else {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_turn")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_turn", addon_direction, addon_total_addon_direction, "left-bottom")
+				}
 			}
 			if left_chip != "waterway" and top_chip != "waterway" and bottom_chip = "waterway" and right_chip = "waterway" {
-				obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_turn")
-				obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_turn", addon_direction, addon_total_addon_direction, "right-bottom")
+				if safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y+1, mapsize, mapsize) = "waterway" {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "turn")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "turn", addon_direction, addon_total_addon_direction, "right-bottom")
+				} else {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_turn")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_turn", addon_direction, addon_total_addon_direction, "right-bottom")
+				}
 			}
 	
 		//T字型交差点
 			if left_chip = "waterway" and top_chip = "waterway" and bottom_chip = "waterway" and right_chip != "waterway" {
-				obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_intersection_T")
-				obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_intersection_T", addon_direction, addon_total_addon_direction, "left-top-bottom")
+				if safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y+1, mapsize, mapsize) = "waterway" {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "intersection_T")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "intersection_T", addon_direction, addon_total_addon_direction, "left-top-bottom")
+
+					; マップの端なら直線道路に変更
+					if x+1 = mapsize {
+						obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "intersection_cross")
+						obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "intersection_cross", addon_direction, addon_total_addon_direction, "null")
+					}
+				} else {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_intersection_T")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_intersection_T", addon_direction, addon_total_addon_direction, "left-top-bottom")
+				}
 			}
 			if left_chip = "waterway" and top_chip = "waterway" and bottom_chip != "waterway" and right_chip = "waterway" {
-				obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_intersection_T")
-				obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_intersection_T", addon_direction, addon_total_addon_direction, "left-right-top")
+				if safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y+1, mapsize, mapsize) = "waterway" {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "intersection_T")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "intersection_T", addon_direction, addon_total_addon_direction, "left-right-top")
+
+					; マップの端なら直線道路に変更
+					if x+1 = mapsize {
+						obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "intersection_cross")
+						obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "intersection_cross", addon_direction, addon_total_addon_direction, "null")
+					}
+				} else {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_intersection_T")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_intersection_T", addon_direction, addon_total_addon_direction, "left-right-top")
+				}
 			}
 			if left_chip = "waterway" and top_chip != "waterway" and bottom_chip = "waterway" and right_chip = "waterway" {
-				obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_intersection_T")
-				obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_intersection_T", addon_direction, addon_total_addon_direction, "left-right-bottom")
+				if safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y+1, mapsize, mapsize) = "waterway" {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "intersection_T")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "intersection_T", addon_direction, addon_total_addon_direction, "left-right-bottom")
+
+					; マップの端なら直線道路に変更
+					if x*1 = mapsize {
+						obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "intersection_cross")
+						obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "intersection_cross", addon_direction, addon_total_addon_direction, "null")
+					}
+				} else {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_intersection_T")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_intersection_T", addon_direction, addon_total_addon_direction, "left-right-bottom")
+				}
 			}
 			if left_chip != "waterway" and top_chip = "waterway" and bottom_chip = "waterway" and right_chip = "waterway" {
-				obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_intersection_T")
-				obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_intersection_T", addon_direction, addon_total_addon_direction, "right-top-bottom")
+				if safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" or safesearch_str(category, x+1, y+1, mapsize, mapsize) = "waterway" {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "intersection_T")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "intersection_T", addon_direction, addon_total_addon_direction, "right-top-bottom")
+
+					; マップの端なら直線道路に変更
+					if x+1 = mapsize {
+						obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "intersection_cross")
+						obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "intersection_cross", addon_direction, addon_total_addon_direction, "null")
+					}
+				} else {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_intersection_T")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_intersection_T", addon_direction, addon_total_addon_direction, "right-top-bottom")
+				}
 			}
 	
-		//十字型交差点
+		//十字型交差点または河口
 			if left_chip = "waterway" and top_chip = "waterway" and bottom_chip = "waterway" and right_chip = "waterway" {
-				obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_intersection_cross")
-				obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_intersection_cross", addon_direction, addon_total_addon_direction, "null")
+				if safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" and safesearch_str(category, x+1, y-1, mapsize, mapsize) = "waterway" and safesearch_str(category, x-1, y-1, mapsize, mapsize) = "waterway" and safesearch_str(category, x+1, y+1, mapsize, mapsize) = "waterway" {
+					obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "intersection_cross")
+					obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "intersection_cross", addon_direction, addon_total_addon_direction, "null")
+				} else {
+					if safesearch_str(category, x-1, y-1, mapsize, mapsize) != "waterway" and safesearch_str(category, x-1, y+1, mapsize, mapsize) != "waterway" {
+						obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "estuary")
+						obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "estuary", addon_direction, addon_total_addon_direction, "left-top-bottom")
+					} else : if safesearch_str(category, x-1, y-1, mapsize, mapsize) != "waterway" and safesearch_str(category, x+1, y-1, mapsize, mapsize) != "waterway" {
+						obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "estuary")
+						obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "estuary", addon_direction, addon_total_addon_direction, "left-right-top")
+					} else : if safesearch_str(category, x-1, y+1, mapsize, mapsize) != "waterway" and safesearch_str(category, x+1, y+1, mapsize, mapsize) != "waterway" {
+						obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "estuary")
+						obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "estuary", addon_direction, addon_total_addon_direction, "left-right-bottom")
+					} else : if safesearch_str(category, x+1, y-1, mapsize, mapsize) != "waterway" and safesearch_str(category, x+1, y+1, mapsize, mapsize) != "waterway" {
+						obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "estuary")
+						obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "estuary", addon_direction, addon_total_addon_direction, "right-top-bottom")
+					} else {
+						obj_type(x, y) = element2( put_addon_name, use_type, addon_total_use_types, "river_intersection_cross")
+						obj_dire(x, y) = element3( put_addon_name, use_type, addon_total_use_types, "river_intersection_cross", addon_direction, addon_total_addon_direction, "null")
+					}
+				}
 			}
 	
 		//1マスだけ孤立した（周りに接続する道路がない）道路の場合はコンクリートタイルを表示
