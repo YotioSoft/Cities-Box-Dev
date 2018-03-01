@@ -244,6 +244,7 @@ train_crossing {
 
 bridge {
 	image = "Two_lane_normal_road(orange_line)_bridge.png"
+	night_mask = "Two_lane_normal_road(orange_line)_bridge__night_mask.png"
 	direction = "width, depth"
 	transparent_color = "0, 0, 0"
 	

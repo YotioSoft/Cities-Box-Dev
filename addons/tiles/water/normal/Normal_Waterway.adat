@@ -5,7 +5,7 @@ addon_icon = "icon_Normal_Waterway.png"
 
 addon_type = "Waterway"
 
-use_types = "turn, intersection_T, intersection_cross, estuary, river_default, river_dead_end, river_turn, river_intersection_T, river_intersection_cross, isolated, under_construction"
+use_types = "turn, intersection_T, intersection_cross, estuary, intersection_cross_without_one_corner, river_default, river_dead_end, river_turn, river_intersection_T, river_intersection_cross, isolated, under_construction"
 
 turn {
 	image = "Normal_Waterway_turn.png"
@@ -166,6 +166,57 @@ estuary {
 		bottom_right_y = "128"
 	}
 	right-top-bottom {
+		size_x = "64"
+		size_y = "32"
+		chip_x = "1"
+		chip_y = "1"
+		
+		top_left_x = "64"
+		top_left_y = "96"
+		bottom_right_x = "64"
+		bottom_right_y = "128"
+	}
+};
+
+intersection_cross_without_one_corner {
+	image = "Normal_Waterway_intersection_cross_without_one_corner.png"
+	direction = "left-top, right-top, left-bottom, right-bottom"
+	transparent_color = "0, 0, 0"
+	
+	left-top {
+		size_x = "64"
+		size_y = "32"
+		chip_x = "1"
+		chip_y = "1"
+		
+		top_left_x = "0"
+		top_left_y = "32"
+		bottom_right_x = "64"
+		bottom_right_y = "64"
+	}
+	right-top {
+		size_x = "64"
+		size_y = "32"
+		chip_x = "1"
+		chip_y = "1"
+		
+		top_left_x = "64"
+		top_left_y = "32"
+		bottom_right_x = "128"
+		bottom_right_y = "64"
+	}
+	left-bottom {
+		size_x = "64"
+		size_y = "32"
+		chip_x = "1"
+		chip_y = "1"
+		
+		top_left_x = "0"
+		top_left_y = "96"
+		bottom_right_x = "64"
+		bottom_right_y = "128"
+	}
+	right-bottom {
 		size_x = "64"
 		size_y = "32"
 		chip_x = "1"
