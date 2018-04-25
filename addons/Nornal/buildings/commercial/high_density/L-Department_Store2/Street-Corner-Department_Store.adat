@@ -1,8 +1,8 @@
-addon_name = "L-Department_Store"
-addon_jp_name = "L字デパート"
+addon_name = "Street-Corner-Department_Store"
+addon_jp_name = "街角デパート"
 addon_author = "YotioSoft"
 addon_summary = "街角によくありそうなデパート。"
-addon_icon = "icon_L-Department_Store.png"
+addon_icon = "icon_Street-Corner-Department_Store.png"
 
 addon_type = "high_density_commercial"
 
@@ -13,12 +13,12 @@ land_price_influence  = "50"
 land_price_influence_grid = "8"
 
 null {
-	image = "L-Department_Store.png"
-	night_mask = "L-Department_Store__night_mask.png"
+	image = "Street-Corner-Department_Store.png"
+	night_mask = "Street-Corner-Department_Store__night_mask.png"
 	direction = "left-top, right-top, left-bottom, right-bottom"
 	transparent_color = "0, 0, 0"
 	
-	left {
+	left-top {
 		size_x = "64"
 		size_y = "64"
 		chip_x = "1"
@@ -29,7 +29,7 @@ null {
 		bottom_right_x = "64"
 		bottom_right_y = "64"
 	}
-	top {
+	right-top {
 		size_x = "64"
 		size_y = "64"
 		chip_x = "1"
@@ -40,7 +40,7 @@ null {
 		bottom_right_x = "128"
 		bottom_right_y = "64"
 	}
-	bottom {
+	left-bottom {
 		size_x = "64"
 		size_y = "64"
 		chip_x = "1"
@@ -51,7 +51,7 @@ null {
 		bottom_right_x = "64"
 		bottom_right_y = "128"
 	}
-	right {
+	right-bottom {
 		size_x = "64"
 		size_y = "64"
 		chip_x = "1"

@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------------------------------
 
-									   Cities Box Ver.1.3.1.1
+									   Cities Box Ver.1.3.1.2
 									 	  (2018.03 Recode)
 
 									  (C) YotioSoft 2017-2018
@@ -1404,6 +1404,7 @@
 	sdns3 addon_top_left_y, 0, 0, 0, tmp, total_addons, 12, 4			; アドオンの絵が描写されている左上の座標y
 	sdns3 addon_bottom_right_x, 0, 0, 0, tmp, total_addons, 12, 4		; アドオンの絵が描写されている右下の座標x
 	sdns3 addon_bottom_right_y, 0, 0, 0, tmp, total_addons, 12, 4		; アドオンの絵が描写されている右下の座標y
+	//sdns addon_total_directions, 0, 0, tmp, total_addons, 12			; アドオンの各タイプ内の向きの数
 
 	//adat（アドオンデータファイル）と画像ファイル読み込み
 
@@ -1616,7 +1617,8 @@
 
 				; addon_dire_names（アドオンのそれぞれのタイプ内の向きの名前）&各方向の内容を切り抜く
 					addon_direction_tmp = get_chapter(addon_a_type_tmp, "direction", " = \"", "\"")
-					split addon_direction_tmp, ", ", addon_directions : split_stat = stat
+					split addon_direction_tmp, ", ", addon_directions
+					split_stat = stat// : sdns addon_total_directions, addon_number, tcnt, str(split_stat)
 
 					repeat split_stat
 						sdns3 addon_dire_names, addon_number, tcnt, cnt, addon_directions(cnt), total_addons, 12, 4
@@ -2503,16 +2505,32 @@
 
 			gmode 2
 			if build_direction_number = 0 {
-				pos mx_position-32,my_position-48 : gcopy 77, 0, 0, 64, 64
+				if street_corner_addon = 0 {
+					pos mx_position-32,my_position-48 : gcopy 77, 0, 0, 64, 64
+				} else {
+					pos mx_position,my_position-64 : gcopy 77, 0, 128, 64, 64
+				}
 			}
 			if build_direction_number = 1 {
-				pos mx_position+32,my_position-48 : gcopy 77, 64, 0, 64, 64
+				if street_corner_addon = 0 {
+					pos mx_position+32,my_position-48 : gcopy 77, 64, 0, 64, 64 
+				} else {
+					pos mx_position+64,my_position-32 : gcopy 77, 64, 128, 64, 64
+				}
 			}
 			if build_direction_number = 2 {
-				pos mx_position-32,my_position-16 : gcopy 77, 0, 64, 64, 64
+				if street_corner_addon = 0 {
+					pos mx_position-32,my_position-16 : gcopy 77, 0, 64, 64, 64
+				} else {
+					pos mx_position-64,my_position-32 : gcopy 77, 0, 128+64, 64, 64
+				}
 			}
 			if build_direction_number = 3 {
-				pos mx_position+32,my_position-16 : gcopy 77, 64, 64, 64, 64
+				if street_corner_addon = 0 {
+					pos mx_position+32,my_position-16 : gcopy 77, 64, 64, 64, 64 
+				} else {
+					pos mx_position,my_position : gcopy 77, 64, 128+64, 64, 64
+				}
 			}
 		} else {
 			change_direction = 0
@@ -3371,7 +3389,7 @@
 	if cursor_mode = "put_Residential" {
 		area_addon_summary = "市民が住む場所を提供します。住居地区を設定すると住居建築物が建設されます。"
 		area_addon_icon = 40
-		if category_name = "low" {
+		if category_mode = "low" {
 			area_addon_number = -1 :  area_addon_name_JP = "低密度な住居地区"
 		} else {
 			area_addon_number = -2 :  area_addon_name_JP = "高密度な住居地区"
@@ -3380,7 +3398,7 @@
 	if cursor_mode = "put_Commercial" {
 		area_addon_summary = "市民が商業を営む場所を提供します。商業地区を設定すると商業建築物が建設されます。"
 		area_addon_icon = 41
-		if category_name = "low" {
+		if category_mode = "low" {
 			area_addon_number = -3 :  area_addon_name_JP = "低密度な商業地区"
 		} else {
 			area_addon_number = -4 :  area_addon_name_JP = "高密度な商業地区"
@@ -3692,14 +3710,22 @@
 			done = 0
 			cant_build_left = 0 : cant_build_top = 0 : cant_build_bottom = 0 : cant_build_right = 0
 
+			; 角用のアドオンか、そうでないかを確認
+			tmp = sdnl3(addon_dire_names, selected_addon_number, build_type_number, 0)
+			if instr(tmp, 0, "-") != -1 {
+				street_corner_addon = 1
+			} else {
+				street_corner_addon = 0
+			}
+
 			while (done = 0 and change_direction = 0)
-				if left_chip_category = "road" and cant_build_left = 0 {
+				if left_chip_category = "road" and (street_corner_addon = 1 and top_chip_category = "road" or street_corner_addon = 0) and cant_build_left = 0 {
 					build_direction_number = 0
-				} else : if top_chip_category = "road" and cant_build_top = 0 {
+				} else : if top_chip_category = "road" and (street_corner_addon = 1 and right_chip_category = "road" or street_corner_addon = 0) and cant_build_top = 0 {
 					build_direction_number = 1
-				} else : if bottom_chip_category = "road" and cant_build_bottom = 0 {
+				} else : if bottom_chip_category = "road" and (street_corner_addon = 1 and left_chip_category = "road" or street_corner_addon = 0) and cant_build_bottom = 0 {
 					build_direction_number = 2
-				} else : if right_chip_category = "road" and cant_build_right = 0 {
+				} else : if right_chip_category = "road" and (street_corner_addon = 1 and bottom_chip_category = "road" or street_corner_addon = 0) and cant_build_right = 0 {
 					build_direction_number = 3
 				} else {
 					build_direction_number = -1
@@ -3761,10 +3787,18 @@
 		}
 
 		; adatファイル内での向きのIDを取得
-		if build_direction_number = 0  : tmp = "left"
-		if build_direction_number = 1  : tmp = "top"
-		if build_direction_number = 2  : tmp = "bottom"
-		if build_direction_number = 3  : tmp = "right"
+		if build_direction_number = 0  {
+			if street_corner_addon = 0 : tmp = "left" : else : tmp = "left-top"
+		}
+		if build_direction_number = 1  {
+			if street_corner_addon = 0 : tmp = "top" : else : tmp = "right-top"
+		}
+		if build_direction_number = 2  {
+			if street_corner_addon = 0 : tmp = "bottom" : else : tmp = "left-bottom"
+		}
+		if build_direction_number = 3  {
+			if street_corner_addon = 0 : tmp = "right" : else : tmp = "right-bottom"
+		}
 		
 		build_direction_number_ID = element3(selected_addon_number, build_type_number, addon_dire_names, tmp)
 
