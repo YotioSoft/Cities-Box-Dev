@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------------------------------
 
-									   Cities Box Ver.1.3.1.2
+									   Cities Box Ver.1.4.0.1
 									 	  (2018.03 Recode)
 
 									  (C) YotioSoft 2017-2018
@@ -1453,16 +1453,6 @@
 			tmp = get_chapter(adat_tmp, "addon_summary", " = \"", "\"")
 			sdns addon_summary, addon_number, 0, tmp
 
-		; addon_icon_number（アドオンのアイコン画像のバッファ番号）
-			tmp = get_chapter(adat_tmp, "addon_icon", " = \"", "\"")
-
-			; アイコン画像読み込み
-				celload tmp, next_image_num
-				next_image_icon_num_str = str(next_image_num)
-				sdns addon_icon_number, addon_number, 0, next_image_icon_num_str
-
-				next_image_num ++
-
 		; addon_type（アドオンのタイプ）
 			tmp1 = get_chapter(adat_tmp, "addon_type", " = \"", "\"")
 			sdns addon_type, addon_number, 0, tmp1
@@ -1539,6 +1529,11 @@
 				notesel type_number_waterway : noteadd str(addon_number), -1
 				ct_done = 1
 			}
+			if tmp1 = "car" {
+				notesel type_car : noteadd addon_name_tmp, -1
+				notesel type_number_car : noteadd str(addon_number), -1
+				ct_done = 1
+			}
 			if tmp1 = "tile" or tmp1 = "Tile" {
 				tile_addon_number = addon_number
 				ct_done = 1
@@ -1546,6 +1541,18 @@
 			
 			if ct_done = 0 {
 				error "A01 : アドオンをカテゴリ分けできません\n"+addon_name(addon_number)+"を規定のカテゴリーに区別できないため、このアドオンは利用できません。\nアドオンファイル(*.adat)のaddon_type要素をご確認ください。"
+			}
+
+		; addon_icon_number（アドオンのアイコン画像のバッファ番号）
+			if tmp1 != "car" {
+				tmp = get_chapter(adat_tmp, "addon_icon", " = \"", "\"")
+	
+				; アイコン画像読み込み
+					celload tmp, next_image_num
+					next_image_icon_num_str = str(next_image_num)
+					sdns addon_icon_number, addon_number, 0, next_image_icon_num_str
+	
+					next_image_num ++
 			}
 			
 		; addon_maker_version（アドオンを作成したAddon Makerのバージョン）
@@ -1752,6 +1759,48 @@
 	onclick gosub *new_map_setting_onclick
 	
 	color 95, 95, 95 : boxf
+
+	//アドオンセット一覧を取得
+	dirlist2h 1, ','
+	dirlist2 buf_addons, "*.adset*", 1, '\\'
+						
+	sdim filelist, buf_addons
+	dirlist2r filelist
+
+	notesel filelist
+	total_addon_sets = notemax
+
+	sdim addon_sets_EN_name, 64, total_addons_sets
+	sdim addon_sets_JP_name, 64, total_addons_sets
+
+	addon_sets_names = ""
+
+	repeat total_addon_sets
+		notesel filelist
+		noteget about_addon_set, cnt
+
+		notesel addon_set_about_file
+		noteload about_addon_set
+
+		addon_sets_EN_name(cnt) = get_chapter(addon_set_about_file, "EN_Name", " = \"", "\"")
+		addon_sets_JP_name(cnt) = get_chapter(addon_set_about_file, "JP_Name", " = \"", "\"")
+
+		addon_sets_names += addon_sets_JP_name(cnt)
+
+		if cnt < total_addon_sets-1 {
+			addon_sets_names += "\n"
+		}
+
+		if addon_sets_EN_name(cnt) = "Normal" : addon_set_num = cnt
+	loop
+
+	if total_addon_sets = 0 {
+		addon_sets_EN_name(0) = "Normal"
+		addon_sets_JP_name(0) = "標準アドオンセット（デフォルト）"
+		addon_sets_names = addon_sets_EN_name(0)
+		addon_set_num = 0
+	}
+	
 	
 	color 255, 255, 255
 	font config_SystemFont, 16
@@ -1776,6 +1825,11 @@
 		}
 		
 		pos 35, 70 : mes "天候の変化"
+
+	//アドオンセット(Addon_Set)
+		pos 10, 100 : mes "アドオンセット"
+		objsize 260, 20
+		pos 100, 100 : combox addon_set_num, , addon_sets_names
 	
 	//OKボタン
 		color 255, 255, 255 : boxf 150, 260, 250, 290
@@ -1820,6 +1874,8 @@
 *new_map_preparation
 	//マップデータ初期化
 	map_Saved_Version = about_release_number
+
+	map_Addons_Set = addon_sets_EN_name(addon_set_num)
 	
 	map_time_Year = gettime(0)
 	map_time_Month = gettime(1)
@@ -2262,6 +2318,59 @@
 		loop
 	loop
 
+*get_cars_position
+	; 車の位置の決定
+	tmp = ""
+	sdns about_cars, 0, 0, tmp, 100, 7							; 各車のバッファ番号、位置、画像上の座標（最大100台）
+	sdns3 cars_id_position, 0, 0, 0, tmp, MAPSIZE_X, MAPSIZE_Y, 4	; 各座標の車のID（最大100台、1マスあたり最大4台とする）
+	new_car_id = 0
+
+	cz = 0
+	
+	repeat MAPSIZE_X
+		cx = cnt
+		repeat MAPSIZE_Y
+			cy = cnt
+
+			if rnd(100) = 0 and category(cx,cy,cz,0) = "road" and new_car_id < 100 and obj_type(cx,cy,cz,0) = 0 {
+				; 車の種類を決定
+				notesel type_number_car
+				car_addon_number_line = rnd(notemax)
+				noteget car_addon_number, car_addon_number_line
+
+				sdns about_cars, new_car_id, 0, car_addon_number
+				tmp = str(cx) : sdns about_cars, new_car_id, 1, tmp
+				tmp = str(cy) : sdns about_cars, new_car_id, 2, tmp
+
+				; アドオン画像の左上・右下の座標
+				if obj_type(cx,cy,cz,0) = 0 { 
+					if obj_dire(cx,cy,cz,0) = 0 {
+						top_left_x = sdnl3(addon_top_left_x, int(car_addon_number), 0, 2)
+						top_left_y = sdnl3(addon_top_left_y, int(car_addon_number), 0, 2)
+						bottom_right_x = sdnl3(addon_bottom_right_x, int(car_addon_number), 0, 2)
+						bottom_right_y = sdnl3(addon_bottom_right_y, int(car_addon_number), 0, 2)
+					} else {
+						top_left_x = sdnl3(addon_top_left_x, int(car_addon_number), 0, 3)
+						top_left_y = sdnl3(addon_top_left_y, int(car_addon_number), 0, 3)
+						bottom_right_x = sdnl3(addon_bottom_right_x, int(car_addon_number), 0, 3)
+						bottom_right_y = sdnl3(addon_bottom_right_y, int(car_addon_number), 0, 3)
+					}
+				}
+
+				sdns about_cars, new_car_id, 3, top_left_x
+				sdns about_cars, new_car_id, 4, top_left_y
+				sdns about_cars, new_car_id, 5, bottom_right_x
+				sdns about_cars, new_car_id, 6, bottom_right_y
+				
+				; 座標に車のIDを書き込み
+				tmp = str(new_car_id) : sdns3 cars_id_position, cx, cy, 0, tmp
+				
+				new_car_id ++
+			}
+		loop
+		await 10
+	loop
+
 /*-----------------------------------------描写処理-----------------------------------------------*/
 *main
 	gsel 0
@@ -2364,6 +2473,14 @@
 				if addons_drow_position_y(x,y,z,0) > -100 {
 					pos addons_drow_position_x(x,y,z,0)+intial_camx-camx, addons_drow_position_y(x,y,z,0)+intial_camy-camy
 					gmode 2 : gcopy int(sdnl3(addon_image, map(x,y,z,0), obj_type(x,y,z,0), 1))+night_mask_drow, addons_top_left_x(x,y,z,0), addons_top_left_y(x,y,z,0), addons_size_x(x,y,z,0), addons_size_y(x,y,z,0)
+				}
+
+				; 車の描写
+				car_id_tmp = sdnl3(cars_id_position, x, y, 0)
+				if car_id_tmp != " " and car_id_tmp != "" {
+					position_x = x * CHIP_SIZE/2 - y * CHIP_SIZE/2 - camx
+					position_y = y * CHIP_SIZE/4 + x * CHIP_SIZE/4 - camy
+					pos position_x, position_y : gmode 2 : gcopy int(sdnl3(addon_image, int(sdnl(about_cars, int(car_id_tmp), 0)), 0, 1)), int(sdnl(about_cars, int(car_id_tmp), 3)), int(sdnl(about_cars, int(car_id_tmp), 4)), 64, 64
 				}
 				
 				; 統計モードが選択されている場合
@@ -2485,6 +2602,10 @@
 
 			await 1
 		loop
+
+		if (cnt \ 10 = 0 and cnt!=0) {
+			carposy++
+		}
 
 		; マウス座標にポインターを表示
 		mx_position = (mx+1) * CHIP_SIZE/2 - (my+1) * CHIP_SIZE/2 - camx
@@ -4208,7 +4329,7 @@
 					if left_chip_category = "waterway" or left_chip_category = "port" or left_chip_category = "port" or left_chip_category_2 = "bridge"     : obj_dire_tmp = "left"
 					if top_chip_category = "waterway" or left_chip_category = "port" or top_chip_category = "port" or top_chip_category_2 = "bridge"       : obj_dire_tmp = "top"
 					if bottom_chip_category = "waterway" or left_chip_category = "port" or bottom_chip_category = "port" or bottom_chip_category_2 = "bridge" : obj_dire_tmp = "bottom"
-					if right_chip_category = "waterway" or right_chip_category = "port" or right_chip_category = "port" or bottom_chip_category_2 = "bridge"   : obj_dire_tmp = "right"
+					if right_chip_category = "waterway" or right_chip_category = "port" or right_chip_category = "port" or right_chip_category_2 = "bridge"   : obj_dire_tmp = "right"
 				}
 
 				; 周囲の道路接続が2つ（直線or曲がり角）
@@ -4232,7 +4353,7 @@
 					}
 					
 					; 直線
-					if (left_chip_category = "waterway" or left_chip_category = "port" or left_chip_category = "port" or left_chip_category_2 = "bridge") and (right_chip_category = "waterway" or right_chip_category = "port" or right_chip_category = "port" or bottom_chip_category_2 = "bridge") {
+					if (left_chip_category = "waterway" or left_chip_category = "port" or left_chip_category = "port" or left_chip_category_2 = "bridge") and (right_chip_category = "waterway" or right_chip_category = "port" or right_chip_category = "port" or right_chip_category_2 = "bridge") {
 						obj_type_tmp = "river_default" : obj_dire_tmp = "depth"
 					}
 					if (top_chip_category = "waterway" or left_chip_category = "port" or top_chip_category = "port" or top_chip_category_2 = "bridge") and (bottom_chip_category = "waterway" or left_chip_category = "port" or bottom_chip_category = "port" or bottom_chip_category_2 = "bridge") {
@@ -5820,6 +5941,9 @@
 	
 	; 保存したCities Boxのバージョン（リリースナンバー）
 		noteadd "Version = "+about_release_number+";", -1
+
+	; アドオンセット
+		noteadd "Addons_Set = \""+map_Addons_Set+"\";", -1
 		noteadd " ", -1
 		
 	; 次に各マップデータ(*.cbx)の設定を保存

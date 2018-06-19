@@ -2,6 +2,7 @@ addon_name = "Normal_Waterway"
 addon_jp_name = "•’Ê‚Ì…˜H"
 addon_summary = "•’Ê‚Ì…˜H‚Å‚·B"
 addon_icon = "icon_Normal_Waterway.png"
+belong_addons_set_name = "British"
 
 addon_type = "Waterway"
 

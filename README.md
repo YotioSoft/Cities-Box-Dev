@@ -1,7 +1,7 @@
 
 Cities Box
 =====================
-![Version](https://img.shields.io/badge/Version-1.3.1.2-brightgreen.svg)
+![Version](https://img.shields.io/badge/Version-1.4.0.1-brightgreen.svg)
 ![ReleaseType](https://img.shields.io/badge/Release%20Type-%E9%96%8B%E7%99%BA%E7%89%88-lightgrey.svg)
 
 # 概要
@@ -96,8 +96,7 @@ Addon Makerについて詳細は、Addon_Makerフォルダ内のReadMe.txtをご
 ・他の都市との交易
 
 # 最終更新
-## Ver.1.3.1.2 r121
-角にしか設置できないアドオンを実装  
-アドオン選択メニューで、高密度の住居/商業地区の地区設定ができない問題を修正  
+## Ver.1.4.0.1 r123 （2018/06/20）
+マップ上に車の複数台表示（不可動）   
   
 ※最新版以外の詳細は同梱のReadMe.txtを御覧ください。
